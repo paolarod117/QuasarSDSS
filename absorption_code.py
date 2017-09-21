@@ -1,3 +1,22 @@
+#############################################################
+#   absorption_code.py
+#   Calculates BALnicity for a list of spectra
+#
+#   Usage:
+#      python absorption_code.py spectra_data_list.csv
+#
+#   Input file:
+#        This program takes a CSV file with the format...
+#
+#        spectrum_name,z,snr
+#
+#   Input parameters:
+#       Spectra base path(path to where spectra are stored on disk)
+#          this needs to be changes when run on another computer:
+
+spec_path = '/home/sean/qso_data/data/dr9_flux/norm/'
+#############################################################
+
 import sys
 
 from pylab import*
@@ -91,7 +110,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
     
         
     
-    normalized_dr9 =  loadtxt('/home/sean/qso_data/data/dr9_flux/norm/'+i+'norm.DR9') #Load in normalized spectrum
+    normalized_dr9 =  loadtxt(spec_path + i) #Load in normalized spectrum
     thousand=0
     
     wavelength = normalized_dr9[:,0] ###################wavelength
@@ -193,7 +212,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
         #              [1 - f(v)/0.9]
         brac=(1. - (norm_flux[jjjs]/0.9))# brac is 1 when norm_flux is negative (or when it is an absorption feature)
          
-        if brac >0: #if brac >0, we have an absorption feature
+        if brac >0: #if brac > 0, we have an absorption feature
             deltav=beta[jjjs+1]-beta[jjjs]  # TEST
             part=part+deltav#initially, part=0, for every positive brac, part is the last value of part+deltav, so when that adds up to 600, we have got our absorption
             bb=0 #forget about bb
@@ -404,7 +423,14 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
     text(-40000, 2, `i`+',     z='+`z`+' snr='+`snr`, rotation=0, fontsize=9)
     
     pp.savefig()
-    
+
+    s = i.split('-')
+    plateid = s[1]
+    mjd = s[2]
+    s = s[3].split('.')
+    fiber = s[0]
+    plt.savefig("plots/spec_" + plateid + "-" + mjd + "-" + fiber + ".png")
+
     close(count)
     vmins_all.append(vmins)
     vmaxs_all.append(vmaxs)
