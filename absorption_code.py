@@ -106,7 +106,8 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
     z=j #Rename redshift
     z=round (z,5) #Round the redshift
     sm_flux=smooth(norm_flux,3) #Smooth the spectrum (3 point boxcar)
-#############################################New (not using in the code)
+    
+    #############################################New (not using in the code)
     avr_SiIV_doublet = 1397.
     z_absS = (wavelength/avr_SiIV_doublet)-1
     obs_wavelength_C=(z_absS+1)*(1549.4825)
@@ -118,7 +119,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
     
     wavelength_CIV_abs1=(z+1)*(wavelength_CIV_emit1)
     wavelength_CIV_abs2=(z+1)*(wavelength_CIV_emit2)
- ########################################################New  (not using in the code) 
+    ########################################################New  (not using in the code) 
                                
     #################################What paola had in her code
     avr_CIV_doublet = 1549. #Average wavelength of CIV doublet
@@ -130,7 +131,6 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
         betas=round (ll,4)
         beta.append (betas)
     beta=array(beta)
-    
     ################################What paola had in her code
 
     #maxvel and minvel are the limits, in velocity, where we want to find absorption and assume that they are SiIV
@@ -141,39 +141,40 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
 
     if beta.any():
         try:
-            fst = np.max(where (beta <= maxvel))#index value of the starting point (on the very left) -- index value of minvel
+            fst = np.max(where(beta <= maxvel)) #index value of the starting point (on the very left) -- index value of minvel
         except:
-            #fst = np.max(where (beta == maxvel))
+            #fst = np.max(where(beta == maxvel))
             fst = 0
 
     try:
-        lst = np.min(where(beta >=minvel))#index value of the ending point (on the very right) -- index value of maxvel
+        lst = np.min(where(beta >= minvel)) #index value of the ending point (on the very right) -- index value of maxvel
     except:
-        lst = where (beta == np.min(beta))
+        lst = where(beta == np.min(beta))
     
-    deltav=0#change in velocity
-    part=0
-    bb=-1
+    deltav = 0 #change in velocity
+    part = 0
+    bb = -1
     
-    countBI=1000 #this is the lower limit of how we are categorizing BALs, so if the width of an absorption feature is above this, we are considering it to be a BAL
+    countBI = 1000 #this is the lower limit of how we are categorizing BALs, so if the width of an absorption feature is above this, we are considering it to be a BAL
     
-    jjj=arange (lst,fst)
-    jjj=array(jjj)
-    #jjj = jjj[::-1]#Reverses jjj here.... this is what forces right -> left so remove it
+    jjj = arange(lst, fst)
+    jjj = array(jjj)
+    jjj = jjj[::-1]#Reverses jjj here.... this is what forces right -> left so remove it
 
     figure(count) #everything indented below is for the graph
     
-    vmins=[]
-    vmaxs=[]
-    all_final_depth=[]
+    vmins = []
+    vmaxs = []
+    all_final_depth = []
 
     for jjjs in jjj:
-          
+        print beta[jjjs]
+
         C = 0
            
         #beta[jjj] is the range of velocity (velocity=x-axis) where we want to find BAL
         #              [1 - f(v)/0.9]
-        brac = (1. - (sm_flux[jjjs] / 0.9))# brac is 1 when norm_flux is negative (or when it is an absorption feature) using smoothed flux
+        brac = (1. - (sm_flux[jjjs] / 0.9))# brac is 1 when sm_flux is negative (or when it is an absorption feature) using smoothed flux
          
         if brac > 0: #if brac > 0, we have an absorption feature
             deltav = beta[jjjs] - beta[jjjs - 1]
@@ -230,7 +231,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                     vvvmins=round (vvvmins,4)
                     vmins.append(vvvmins)
 
-                if (1. - (norm_flux[jjjs-1]/0.9)) <0: # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
+                if (1. - (sm_flux[jjjs-1]/0.9)) <0: # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
                     vvmaxs =beta[jjjs]
                     vvmaxs=round (vvmaxs,4)
                     vmaxs.append(vvmaxs)
@@ -314,7 +315,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
        
             BI_all_individual.append (BI_individual_appended)# contains multiple arrays, each array contains BI values for each absorption feature of a single spectrum
             EW_all_individual.append (EW_individual)
-    
+
     yes=('name: ' + `i` + '\n' + 'BI (-3000 > v > -30,000): ' + `BI_adding` + '\n' +  'vmins: ' + `vmins` + '\n' + 'vmaxs: '+`vmaxs`+ '\n' + 'BI_individual: '+`BI_individual_appended`+ '\n' + 'EW_individual: '+`EW_individual`+ '\n' + 'Depth: '+`all_final_depth`+'\n'+'\n')
     vlast.append (yes)
 
