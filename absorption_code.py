@@ -159,24 +159,31 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
     
     jjj = arange(lst, fst)
     jjj = array(jjj)
-    jjj = jjj[::-1]#Reverses jjj here.... this is what forces right -> left so remove it
+    jjj = jjj[::-1]#Reverses jjj here....
 
     figure(count) #everything indented below is for the graph
     
     vmins = []
     vmaxs = []
     all_final_depth = []
+    non_trough_count = 100
 
     for jjjs in jjj:
-        print beta[jjjs]
-
         C = 0
            
         #beta[jjj] is the range of velocity (velocity=x-axis) where we want to find BAL
         #              [1 - f(v)/0.9]
-        brac = (1. - (sm_flux[jjjs] / 0.9))# brac is 1 when sm_flux is negative (or when it is an absorption feature) using smoothed flux
+        brac = (1. - (sm_flux[jjjs] / 0.9))# brac is > 0 when sm_flux is negative (or when it is an absorption feature) using smoothed flux
          
-        if brac > 0: #if brac > 0, we have an absorption feature
+        if brac > 0:
+            non_trough_count = 0
+        else:
+            non_trough_count += 1
+
+        if brac > 0 or non_trough_count < 4: #if brac > 0, we have an absorption feature
+            if non_trough_count < 4 and brac <= 0:
+                continue
+
             deltav = beta[jjjs] - beta[jjjs - 1]
             part = part + deltav#initially, part=0, for every positive brac, part is the last value of part+deltav, so when that adds up to countBI, we have got our absorption
             bb = 0 #forget about bb
@@ -231,28 +238,29 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                     vvvmins=round (vvvmins,4)
                     vmins.append(vvvmins)
 
-                if (1. - (sm_flux[jjjs-1]/0.9)) <0: # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
-                    vvmaxs =beta[jjjs]
-                    vvmaxs=round (vvmaxs,4)
+                #HERE is where I need to adjust for trough merging
+                if (1. - (sm_flux[jjjs - 1] / 0.9)) < 0: # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
+                    vvmaxs = beta[jjjs]
+                    vvmaxs = round (vvmaxs, 4)
                     vmaxs.append(vvmaxs)
                     
                     BI_individual = sum (BI_for_individual)
-                    BI_individual=round(BI_individual,4)
-                    BI_individual_appended.append (BI_individual)# this array contains one single BI value of each absortopn feature in a single spectrum
-                    BI_for_individual=[]
+                    BI_individual = round(BI_individual, 4)
+                    BI_individual_appended.append(BI_individual)# this array contains one single BI value of each absortopn feature in a single spectrum
+                    BI_for_individual = []
                     
-                    EW_ind_sum = sum (EW_ind)
-                    EW_ind_sum=round(EW_ind_sum,4)
-                    EW_individual.append (EW_ind_sum)
-                    EW_ind=[]
+                    EW_ind_sum = sum(EW_ind)
+                    EW_ind_sum = round(EW_ind_sum, 4)
+                    EW_individual.append(EW_ind_sum)
+                    EW_ind = []
 
-                    temp_index_vmin = where (beta ==beta[vvmins])
-                    temp_index_vmax = where (beta ==vvmaxs )
+                    temp_index_vmin = where(beta ==beta[vvmins])
+                    temp_index_vmax = where(beta ==vvmaxs)
                 
-                    depth_array= beta [temp_index_vmin[0]:temp_index_vmax[0]]#original
+                    depth_array = beta[temp_index_vmin[0]:temp_index_vmax[0]]#original
                     
                     if len (depth_array) <1:
-                        depth_array= beta [temp_index_vmax[0]:temp_index_vmin[0]]
+                        depth_array = beta[temp_index_vmax[0]:temp_index_vmin[0]]
                         
                     for depth in depth_array:
                         index_depth = where (depth == beta)
@@ -313,15 +321,15 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
             
             BI_all.append(BI_adding)#BI_all considers all absorption features where brac >0.
        
-            BI_all_individual.append (BI_individual_appended)# contains multiple arrays, each array contains BI values for each absorption feature of a single spectrum
-            EW_all_individual.append (EW_individual)
+            BI_all_individual.append(BI_individual_appended)# contains multiple arrays, each array contains BI values for each absorption feature of a single spectrum
+            EW_all_individual.append(EW_individual)
 
     yes=('name: ' + `i` + '\n' + 'BI (-3000 > v > -30,000): ' + `BI_adding` + '\n' +  'vmins: ' + `vmins` + '\n' + 'vmaxs: '+`vmaxs`+ '\n' + 'BI_individual: '+`BI_individual_appended`+ '\n' + 'EW_individual: '+`EW_individual`+ '\n' + 'Depth: '+`all_final_depth`+'\n'+'\n')
     vlast.append (yes)
 
-    all_all_final_depth.append (all_final_depth)
+    all_all_final_depth.append(all_final_depth)
     
-    final_norm_error = norm_error /3**(0.5)
+    final_norm_error = norm_error / 3**(0.5)
     xlim(np.min(beta),0)# this is just seting how wide the graph should be (so we are setting the domain)
     title('Normalized flux vs velocity')
     xlabel('Velocity (km/s)')
