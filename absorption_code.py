@@ -175,13 +175,14 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
         #              [1 - f(v)/0.9]
         brac = (1. - (sm_flux[jjjs] / 0.9))# brac is > 0 when sm_flux is negative (or when it is an absorption feature) using smoothed flux
          
+        #Handle 3-point trough merging
         if brac > 0:
             non_trough_count = 0
         else:
             non_trough_count += 1
 
-        if brac > 0 or non_trough_count < 4: #if brac > 0, we have an absorption feature
-            if non_trough_count < 4 and brac <= 0:
+        if brac > 0 or non_trough_count <= 3: #if brac > 0 (or we are within an allowable region), we have an absorption feature
+            if non_trough_count <=3  and brac <= 0: #Do not count a relapse as a new trough
                 continue
 
             deltav = beta[jjjs] - beta[jjjs - 1]
@@ -239,7 +240,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                     vmins.append(vvvmins)
 
                 #HERE is where I need to adjust for trough merging
-                if (1. - (sm_flux[jjjs - 1] / 0.9)) < 0: # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
+                if (1. - (sm_flux[jjjs + 1] / 0.9)) < 0 and (1. - (sm_flux[jjjs + 4] / 0.9)): # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
                     vvmaxs = beta[jjjs]
                     vvmaxs = round (vvmaxs, 4)
                     vmaxs.append(vvmaxs)
@@ -259,7 +260,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                 
                     depth_array = beta[temp_index_vmin[0]:temp_index_vmax[0]]#original
                     
-                    if len (depth_array) <1:
+                    if len(depth_array) <1:
                         depth_array = beta[temp_index_vmax[0]:temp_index_vmin[0]]
                         
                     for depth in depth_array:
