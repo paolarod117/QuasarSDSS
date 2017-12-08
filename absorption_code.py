@@ -180,9 +180,13 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
             non_trough_count = 0
         else:
             non_trough_count += 1
+            brac = 0
 
-        if brac > 0 or non_trough_count <= 3: #if brac > 0 (or we are within an allowable region), we have an absorption feature
-            if non_trough_count <=3  and brac <= 0: #Do not count a relapse as a new trough
+        if(
+            brac > 0 or
+            non_trough_count <= 3
+        ): #if brac > 0 (or we are within an allowable region), we have an absorption feature
+            if non_trough_count <= 3 and brac <= 0: #Do not count a relapse as a new trough
                 continue
 
             deltav = beta[jjjs] - beta[jjjs - 1]
@@ -239,13 +243,18 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                     vvvmins=round (vvvmins,4)
                     vmins.append(vvvmins)
 
-                #HERE is where I need to adjust for trough merging
-                if (1. - (sm_flux[jjjs + 1] / 0.9)) < 0 and (1. - (sm_flux[jjjs + 4] / 0.9)): # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.
+                #We are in a real absorption feature AND the next points(to the left) are above the continuum
+                if(
+                c    brac >= 0 and
+                    (1. - (sm_flux[jjjs + 1] / 0.9)) <= 0
+                ): # logic of this line is: if the next value of brac is negative (meaning the absorption feature has ended) then the current point of jjjs is our Vmax.       
                     vvmaxs = beta[jjjs]
-                    vvmaxs = round (vvmaxs, 4)
+                    vvmaxs = round(vvmaxs, 4)
                     vmaxs.append(vvmaxs)
-                    
-                    BI_individual = sum (BI_for_individual)
+         
+                    print vvmaxs
+
+                    BI_individual = sum(BI_for_individual)
                     BI_individual = round(BI_individual, 4)
                     BI_individual_appended.append(BI_individual)# this array contains one single BI value of each absortopn feature in a single spectrum
                     BI_for_individual = []
@@ -260,7 +269,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                 
                     depth_array = beta[temp_index_vmin[0]:temp_index_vmax[0]]#original
                     
-                    if len(depth_array) <1:
+                    if len(depth_array) < 1:
                         depth_array = beta[temp_index_vmax[0]:temp_index_vmin[0]]
                         
                     for depth in depth_array:
@@ -274,7 +283,7 @@ for i,j,snr in zip (spectra_action, redshifts_action, snr_action): #Iterate over
                     final_depth=round (final_depth,4)
                     all_final_depth.append (final_depth)
                     
-                if beta [jjjs] == beta[lst]: #the logic of this line is: if it happens that the absorption feature that the code is currently at continues even after our range (range of where we want to find the absorption feature), then just take the last point of our range as the Vmax
+                if beta[jjjs] == beta[lst]: #the logic of this line is: if it happens that the absorption feature that the code is currently at continues even after our range (range of where we want to find the absorption feature), then just take the last point of our range as the Vmax
                     vvmaxs=(beta[jjjs])
                     vvmaxs=round (vvmaxs,4)
                     vmaxs.append(vvmaxs)
